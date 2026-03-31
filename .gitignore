@@ -1,0 +1,34 @@
+# Environment and secrets
+.env
+*.p8
+*.pem
+rsa_key*
+
+# Logs
+*.txt
+*.log
+error.log
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+env/
+.venv/
+
+# IDE
+.idea/
+.vscode/
+.claude/
+*.swp
+*.swo
+.DS_Store
+
+# Distribution
+dist/
+build/
+*.egg-info/
+

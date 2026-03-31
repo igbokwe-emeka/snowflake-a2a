@@ -1,0 +1,15 @@
+# gcloudignore for Cortex A2A Agent
+# This ensures rsa_key.p8 is uploaded, even if it's in .gitignore
+
+.gcloudignore
+.git
+.gitignore
+
+# Exclude python cache
+__pycache__/
+*.py[cod]
+
+# Include the necessary secrets for this test
+!rsa_key.p8
+!rsa_key*
+!.env
