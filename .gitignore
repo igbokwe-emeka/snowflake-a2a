@@ -32,3 +32,7 @@ dist/
 build/
 *.egg-info/
 
+# Local scripts and generated files
+generate_walkthrough_pdf.py
+snowflake_a2a_walkthrough.pdf
+
