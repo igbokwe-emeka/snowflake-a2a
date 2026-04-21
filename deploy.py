@@ -197,6 +197,31 @@ def manage_authorization(service_name, agent_name="snowflake-a2a"):
     return create_authorization(token, auth_id)
 
 
+ARTIFACT_REPO = "cloud-run-source-deploy"
+
+
+def ensure_artifact_repo():
+    """Check if the Artifact Registry repo exists; create it if not."""
+    print(f"\nChecking Artifact Registry repository '{ARTIFACT_REPO}' in {REGION}...")
+    result = gcloud(
+        "artifacts", "repositories", "describe", ARTIFACT_REPO,
+        "--location", REGION,
+        "--project", PROJECT_ID,
+        check=False,
+    )
+    if result:
+        print(f"[OK] Artifact Registry repository '{ARTIFACT_REPO}' already exists.")
+    else:
+        print(f"Repository '{ARTIFACT_REPO}' not found. Creating...")
+        gcloud(
+            "artifacts", "repositories", "create", ARTIFACT_REPO,
+            "--repository-format", "docker",
+            "--location", REGION,
+            "--project", PROJECT_ID,
+        )
+        print(f"[OK] Artifact Registry repository '{ARTIFACT_REPO}' created.")
+
+
 def main():
     agent_name   = os.getenv("AGENT_NAME", "snowflake-cortex-adk-proxy")
     service_name = agent_name.replace("_", "-").lower()
@@ -209,14 +234,17 @@ def main():
         f"SNOWFLAKE_USER={os.getenv('SNOWFLAKE_USER', '')}",
     ])
 
-    image = f"us-central1-docker.pkg.dev/{PROJECT_ID}/cloud-run-source-deploy/{service_name}:latest"
+    image = f"us-central1-docker.pkg.dev/{PROJECT_ID}/{ARTIFACT_REPO}/{service_name}:latest"
 
-    # Step 1: Build
+    # Step 1: Ensure Artifact Registry repo exists
+    ensure_artifact_repo()
+
+    # Step 2: Build
     print(f"Building container image for {service_name}...")
     gcloud("builds", "submit", "--tag", image, "--project", PROJECT_ID, ".")
     print("[OK] Build successful!")
 
-    # Step 2: Deploy
+    # Step 3: Deploy
     print(f"\nDeploying {service_name} to Cloud Run in project {PROJECT_ID}...")
     gcloud(
         "run", "deploy", service_name,
@@ -239,11 +267,11 @@ def main():
     )
     print(f"Service URL: {url}")
 
-    # Step 3: Manage authorization resource
+    # Step 4: Manage authorization resource
     auth_resource_name = manage_authorization(service_name)
     os.environ["AGENT_AUTHORIZATION"] = auth_resource_name
 
-    # Step 4: Register agent
+    # Step 5: Register agent
     print("\nRegistering agent with Gemini Enterprise...")
     result = subprocess.run([sys.executable, "register_a2a_agent.py"])
 
