@@ -42,17 +42,21 @@ Before deploying, ensure the following are in place:
 - **Python 3.11+** with `pip install -r requirements.txt`
 - **Snowflake Cortex Agent** deployed in Snowflake
 - **Snowflake External OAuth** integration configured to trust your Entra ID (Azure AD) tenant and accept the token audience (`api://<client-id>/session:role-any`)
-CREATE OR REPLACE SECURITY INTEGRATION ENTRA_ID_GEMINI_OAUTH
-    TYPE = EXTERNAL_OAUTH
-    ENABLED = TRUE
-    EXTERNAL_OAUTH_TYPE = AZURE
-    EXTERNAL_OAUTH_ISSUER = 'https://login.microsoftonline.com/<Tenant ID>/v2.0'
-    EXTERNAL_OAUTH_JWS_KEYS_URL = 'https://login.microsoftonline.com/<Tenant ID>/discovery/v2.0/keys'
-    EXTERNAL_OAUTH_ANY_ROLE_MODE = ENABLE
-    EXTERNAL_OAUTH_BLOCKED_ROLES_LIST = ('ACCOUNTADMIN', 'ORGADMIN', 'SECURITYADMIN')
-    EXTERNAL_OAUTH_AUDIENCE_LIST = ('api://<Client ID>', '<Client ID>')
-    EXTERNAL_OAUTH_TOKEN_USER_MAPPING_CLAIM = ('preferred_username', 'upn')
-    EXTERNAL_OAUTH_SNOWFLAKE_USER_MAPPING_ATTRIBUTE = 'EMAIL_ADDRESS';
+
+  ```sql
+  CREATE OR REPLACE SECURITY INTEGRATION ENTRA_ID_GEMINI_OAUTH
+      TYPE                                      = EXTERNAL_OAUTH
+      ENABLED                                   = TRUE
+      EXTERNAL_OAUTH_TYPE                       = AZURE
+      EXTERNAL_OAUTH_ISSUER                     = 'https://login.microsoftonline.com/<Tenant ID>/v2.0'
+      EXTERNAL_OAUTH_JWS_KEYS_URL               = 'https://login.microsoftonline.com/<Tenant ID>/discovery/v2.0/keys'
+      EXTERNAL_OAUTH_ANY_ROLE_MODE              = ENABLE
+      EXTERNAL_OAUTH_BLOCKED_ROLES_LIST         = ('ACCOUNTADMIN', 'ORGADMIN', 'SECURITYADMIN')
+      EXTERNAL_OAUTH_AUDIENCE_LIST              = ('api://<Client ID>', '<Client ID>')
+      EXTERNAL_OAUTH_TOKEN_USER_MAPPING_CLAIM   = ('preferred_username', 'upn')
+      EXTERNAL_OAUTH_SNOWFLAKE_USER_MAPPING_ATTRIBUTE = 'EMAIL_ADDRESS';
+  ```
+
 - **Entra ID App Registration** with:
   - A client secret
   - Redirect URI: `https://vertexaisearch.cloud.google.com/static/oauth/oauth.html`
