@@ -42,6 +42,17 @@ Before deploying, ensure the following are in place:
 - **Python 3.11+** with `pip install -r requirements.txt`
 - **Snowflake Cortex Agent** deployed in Snowflake
 - **Snowflake External OAuth** integration configured to trust your Entra ID (Azure AD) tenant and accept the token audience (`api://<client-id>/session:role-any`)
+CREATE OR REPLACE SECURITY INTEGRATION ENTRA_ID_GEMINI_OAUTH
+    TYPE = EXTERNAL_OAUTH
+    ENABLED = TRUE
+    EXTERNAL_OAUTH_TYPE = AZURE
+    EXTERNAL_OAUTH_ISSUER = 'https://login.microsoftonline.com/<Tenant ID>/v2.0'
+    EXTERNAL_OAUTH_JWS_KEYS_URL = 'https://login.microsoftonline.com/<Tenant ID>/discovery/v2.0/keys'
+    EXTERNAL_OAUTH_ANY_ROLE_MODE = ENABLE
+    EXTERNAL_OAUTH_BLOCKED_ROLES_LIST = ('ACCOUNTADMIN', 'ORGADMIN', 'SECURITYADMIN')
+    EXTERNAL_OAUTH_AUDIENCE_LIST = ('api://<Client ID>', '<Client ID>')
+    EXTERNAL_OAUTH_TOKEN_USER_MAPPING_CLAIM = ('preferred_username', 'upn')
+    EXTERNAL_OAUTH_SNOWFLAKE_USER_MAPPING_ATTRIBUTE = 'EMAIL_ADDRESS';
 - **Entra ID App Registration** with:
   - A client secret
   - Redirect URI: `https://vertexaisearch.cloud.google.com/static/oauth/oauth.html`
@@ -78,14 +89,6 @@ OAUTH_CLIENT_SECRET=YOUR_ENTRA_CLIENT_SECRET
 
 # Cloud Run Service URL (set after first deploy)
 AGENT_URL=https://YOUR_SERVICE-YOUR_HASH-uc.a.run.app
-```
-
-### 2. Run Locally
-
-```bash
-pip install -r requirements.txt
-python main.py
-# Proxy starts on http://localhost:8080
 ```
 
 ## Deployment
